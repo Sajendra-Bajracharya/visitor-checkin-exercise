@@ -26,9 +26,9 @@ and check-in time.
 
 **Execution:** [pass]
 
-### QA-002 —  Verify visitor checkout
+### QA-002 — Verify visitor checkout
 
-**Type:** Happy Path  
+**Type:** Happy Path
 
 **Precondition:**
 - At least one visitor is present in the Active Visitors list.
@@ -49,18 +49,15 @@ in the Active Visitors list.
 **Type:** Happy Path
 
 **Precondition:**
-
 - The visitor registration page is open.
 - The receptionist's browser/system timezone is set to Asia/Kathmandu.
 
 **Steps:**
-
 1. Register a new visitor with valid details.
 2. Note the current local time (Asia/Kathmandu).
 3. Check the check-in time displayed in the Active Visitors list.
 
 **Expected Result:**
-
 The displayed check-in time matches the current Asia/Kathmandu local time, not UTC or another timezone.
 
 **Execution:** [fail]
@@ -70,17 +67,14 @@ The displayed check-in time matches the current Asia/Kathmandu local time, not U
 **Type:** Happy Path
 
 **Precondition:**
-
 - A visitor is currently in the Active Visitors list.
 
 **Steps:**
-
 1. Confirm the visitor appears in the Active Visitors list.
 2. Deactivate the visitor's record as an administrator.
 3. Check the Active Visitors list.
 
 **Expected Result:**
-
 The deactivated visitor no longer appears in the Active Visitors list.
 
 **Execution:** [fail]
@@ -111,11 +105,102 @@ autocomplete.
 
 **Execution:** [fail]
 
+### QA-006 — Confirm GET /api/hosts returns the full list of host records
 
+**Type:** Happy Path
 
+**Precondition:**
+- Host records exist in the database (verified via `GET /api/hosts`, e.g.
+  12 records returned in current dataset: id 1 "Alice Mercer" through id
+  12 "Liam Fitzpatrick").
+
+**Steps:**
+1. Send GET /api/hosts directly (e.g. via curl or API client).
+2. Check the HTTP status code.
+3. Check the response body structure and field names for each host record.
+
+**Expected Result:**
+The API returns 200 OK with a JSON array of host objects. Each object
+contains `id` and `name` only — there is no `active`/`status` field on
+the host resource, confirming hosts have no enable/disable state in the
+current data model (relevant to QA-024: an "inactive host" is not a
+reachable state; only an empty hosts table is).
+
+**Execution:** [pass]
+
+### QA-007 — Confirm GET /api/visitors returns the list of visitors
+
+**Type:** Happy Path
+
+**Precondition:**
+- At least one visitor exists.
+
+**Steps:**
+1. Send GET /api/visitors.
+2. Check the HTTP status code.
+3. Check the response body.
+
+**Expected Result:**
+Returns 200 OK with a JSON array of visitor records, each including id, full_name, company_name, purpose, checked_in_at, checked_out_at, active, host_id, and host_name.
+
+**Execution:** [pass]
+
+### QA-008 — Confirm PATCH /api/visitors/:id/check_out successfully checks out a visitor
+
+**Type:** Happy Path
+
+**Precondition:**
+- At least one currently active (not checked out) visitor exists, with a known id.
+
+**Steps:**
+1. Send PATCH /api/visitors/:id/check_out for that visitor's id.
+2. Check the HTTP status code.
+3. Check the response body.
+
+**Expected Result:**
+Returns 200 OK with the visitor's updated record, including a populated checked_out_at timestamp.
+
+**Execution:** [pass]
+
+### QA-009 — Confirm GET /api/visitors/search returns correct results for a valid query
+
+**Type:** Happy Path
+
+**Precondition:**
+- At least one visitor with a known, unique full name exists.
+
+**Steps:**
+1. Send GET /api/visitors/search?q=<visitor's name>.
+2. Check the HTTP status code.
+3. Check the response body.
+
+**Expected Result:**
+Returns 200 OK with a JSON array containing the matching visitor(s) and their details (id, full_name, company_name, host_id).
+
+**Execution:** [pass]
+
+### QA-010 — Confirm POST /api/visitors successfully registers a new visitor
+
+**Type:** Happy Path
+
+**Precondition:**
+- A valid host_id exists in the system.
+
+**Steps:**
+1. Send POST /api/visitors with a valid full_name, company_name, host_id, and purpose in the request body.
+2. Check the HTTP status code.
+3. Check the response body.
+4. Send GET /api/visitors to confirm the new record is present.
+
+**Expected Result:**
+Returns a success status (200/201) with the newly created visitor record, including a generated id and checked_in_at timestamp. The visitor also appears in the visitor list afterward.
+
+**Execution:** [pass]
+
+---
 ## Negative Tests
 
-### QA-006 — Verify registration with empty full name
+### QA-011 — Verify registration with empty full name
 
 **Type:** Negative
 
@@ -136,7 +221,7 @@ validation message should be displayed.
 
 **Execution:** [pass]
 
-### QA-007 — Verify registration with empty Host feild
+### QA-012 — Verify registration with empty Host field
 
 **Type:** Negative
 
@@ -155,9 +240,9 @@ validation message should be displayed.
 The visitor should not be registered and an appropriate
 validation message should be displayed.
 
-**Execution:** [Pass]
+**Execution:** [pass]
 
-### QA-008 — Verify registration with invalid Name
+### QA-013 — Verify registration with invalid Name
 
 **Type:** Negative
 
@@ -176,7 +261,7 @@ an appropriate validation message.
 
 **Execution:** [fail]
 
-### QA-009 — Verify registration with empty Company
+### QA-014 — Verify registration with empty Company
 
 **Type:** Negative
 
@@ -199,7 +284,7 @@ and check-in time.
 
 **Execution:** [pass]
 
-### QA-010 — Verify registration with empty Purpose
+### QA-015 — Verify registration with empty Purpose
 
 **Type:** Negative
 
@@ -215,92 +300,103 @@ and check-in time.
 6. Check the result.
 
 **Expected Result:**
-The application should accpet the registration because the Purpose field is not marked required.
+The application should accept the registration because the Purpose field is not marked required.
 The visitor is registered successfully and appears in the
 Active Visitors list with the correct visitor information
 and check-in time.
 
 **Execution:** [pass]
 
-### QA-011 — Confirm registration with a whitespace-only full name is rejected
- 
+### QA-016 — Confirm registration with a whitespace-only full name is rejected
+
 **Type:** Negative
- 
+
 **Precondition:**
 - The visitor registration form is open.
+
 **Steps:**
 1. Enter only spaces into the Full Name field.
 2. Enter valid data in the remaining fields.
 3. Select an active host employee.
 4. Click the Submit button.
 5. Check the result.
+
 **Expected Result:**
 The visitor should not be registered and an appropriate validation message should be displayed.
- 
+
 **Execution:** [fail]
 
-### QA-012 — Confirm checking out an already-checked-out visitor is handled correctly
- 
+### QA-017 — Confirm checking out an already-checked-out visitor is handled correctly
+
 **Type:** Negative
- 
+
 **Precondition:**
 - A visitor has already been checked out.
+
 **Steps:**
 1. Attempt to trigger checkout again for the same visitor (e.g., via direct API call or stale UI state).
 2. Check the result.
+
 **Expected Result:**
 The system should reject the duplicate checkout or handle it gracefully, without error or duplicate side effects.
- 
+
 **Execution:** [fail]
 
-### QA-013 — Confirm checking out a non-existent visitor ID returns an appropriate error
- 
+### QA-018 — Confirm checking out a non-existent visitor ID returns an appropriate error
+
 **Type:** Negative
- 
+
 **Precondition:**
 - No visitor exists with the ID to be tested (e.g., a deleted or invalid ID).
+
 **Steps:**
 1. Send a checkout request for an invalid/non-existent visitor ID (via API).
 2. Check the response.
+
 **Expected Result:**
 The API returns an appropriate error (e.g., 404) rather than a server error or silent success.
- 
+
 **Execution:** [pass]
 
-### QA-014 — Verify stored script tags in Full Name are not executed when displayed
- 
-**Type:** Negative Path
- 
+### QA-019 — Verify stored script tags in Full Name are not executed when displayed
+
+**Type:** Negative
+
 **Precondition:**
 - The visitor registration form is open.
+
 **Steps:**
 1. Enter `<script>alert("hacked")</script>` into the Full Name field.
 2. Fill remaining fields with valid data and submit.
 3. Check the Active Visitors list where this visitor's name is displayed.
 4. Check whether an alert popup appears, or whether the text is shown as plain, harmless text.
+
 **Expected Result:**
 The script tag should either be rejected at input, or stored and displayed as plain visible text and should never actually execute in the browser.
- 
+
 **Execution:** [pass]
 
-### QA-016 — Confirm a classic SQL injection payload does not alter query behavior or expose data
- 
+### QA-020 — Confirm a classic SQL injection payload does not alter query behavior or expose data
+
 **Type:** Security — SQL Injection
- 
+
 **Precondition:**
 - The search endpoint is accessible.
+
 **Steps:**
 1. Send a search request using a classic injection payload as the query, e.g. `' OR '1'='1` (URL-encoded).
 2. Check the HTTP status code and response body.
 3. Check whether the response returns an unexpectedly large/complete set of records (which would suggest the payload altered the underlying query logic), or a normal/safe response.
+
 **Expected Result:**
 The payload should be treated as a literal search string with no special meaning — it should not cause the query to return all records, error out with a SQL exception, or behave differently from any other non-matching search term.
- 
+
 **Execution:** [pass]
 
+---
 ## Boundary Testing
 
-### QA-017 — Verify active visitor pagination at 20 records
+### QA-021 — Verify active visitor pagination at 20 records
 
 **Type:** Boundary
 
@@ -318,7 +414,7 @@ of active visitors.
 
 **Execution:** [pass]
 
-### QA-018 Verify pagination when the 21st visitor is added
+### QA-022 — Verify pagination when the 21st visitor is added
 
 **Type:** Boundary
 
@@ -338,48 +434,51 @@ the additional visitor should appear on the second page.
 
 **Execution:** [pass]
 
-### QA-019 — Verify that the active list renders an empty state with zero active visitors
- 
+### QA-023 — Verify that the active list renders an empty state with zero active visitors
+
 **Type:** Boundary
- 
+
 **Precondition:**
 - No visitors are currently active (all checked out or none registered).
+
 **Steps:**
 1. Confirm no active visitors exist.
 2. Check the Active Visitors list display.
+
 **Expected Result:**
 The list displays a clear empty state rather than an error, broken layout, or blank screen.
- 
+
 **Execution:** [pass]
 
-### QA-020 — Confirm active list displays correctly with exactly one active visitor
- 
+### QA-024 — Confirm active list displays correctly with exactly one active visitor
+
 **Type:** Boundary
- 
+
 **Precondition:**
 - Exactly one visitor is currently active.
+
 **Steps:**
 1. Confirm only one visitor exists in the active list.
 2. Check the list display and pagination controls.
+
 **Expected Result:**
 The single visitor displays correctly with no pagination controls shown.
- 
+
 **Execution:** [pass]
 
-### QA-021 — Confirm pagination shows no "next page" control at exactly 20 active visitors
- 
+### QA-025 — Confirm pagination shows no "next page" control at exactly 20 active visitors
+
 **Type:** Boundary
- 
+
 **Precondition:**
 - Exactly 20 active visitors exist.
+
 **Steps:**
 1. Confirm the Active Visitors list is displayed.
 2. Check the number of visitors on the page.
 3. Check whether a next-page control is present.
+
 **Expected Result:**
 All 20 visitors display on a single page, and no next-page control is shown (since there is no second page).
- 
+
 **Execution:** [fail]
-
-
-
