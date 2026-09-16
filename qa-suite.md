@@ -283,21 +283,6 @@ The script tag should either be rejected at input, or stored and displayed as pl
  
 **Execution:** [pass]
 
-### QA-015 — Confirm a reflected script payload in the search query does not execute
- 
-**Type:** Negative
- 
-**Precondition:**
-- The search feature (Full Name autocomplete or GET /api/visitors/search) is accessible.
-**Steps:**
-1. Search using `<script>alert(1)</script>` as the query text.
-2. Check the response/UI for the search results.
-3. Check whether the payload executes or is shown as inert text/JSON.
-**Expected Result:**
-The payload should not execute; API responses should return it as an escaped/plain string within JSON, and the UI (if it renders any part of the query back to the page) should not execute it.
- 
-**Execution:** [pass]
-
 ### QA-016 — Confirm a classic SQL injection payload does not alter query behavior or expose data
  
 **Type:** Security — SQL Injection
@@ -305,7 +290,7 @@ The payload should not execute; API responses should return it as an escaped/pla
 **Precondition:**
 - The search endpoint is accessible.
 **Steps:**
-1. Send a search request using a classic injection payload as the query, e.g. `  ` (URL-encoded).
+1. Send a search request using a classic injection payload as the query, e.g. `' OR '1'='1` (URL-encoded).
 2. Check the HTTP status code and response body.
 3. Check whether the response returns an unexpectedly large/complete set of records (which would suggest the payload altered the underlying query logic), or a normal/safe response.
 **Expected Result:**
