@@ -358,8 +358,7 @@ The API returns an appropriate error (e.g., 404) rather than a server error or s
 
 **Execution:** [pass]
 
-### QA-019 — Verify stored script tags in Full Name are not executed when displayed
-
+### QA-019 — Verify stored script tags in Full Name are not executed when displayed (UI and API)
 **Type:** Negative
 
 **Precondition:**
@@ -376,20 +375,21 @@ The script tag should either be rejected at input, or stored and displayed as pl
 
 **Execution:** [pass]
 
-### QA-020 — Confirm a classic SQL injection payload does not alter query behavior or expose data
+### QA-020 — Verify stored SQL injection payload in Full Name does not alter query behavior or get executed (UI and API)
 
-**Type:** Security — SQL Injection
+**Type:** Negative
 
 **Precondition:**
-- The search endpoint is accessible.
+- The visitor registration form is open.
 
 **Steps:**
-1. Send a search request using a classic injection payload as the query, e.g. `' OR '1'='1` (URL-encoded).
-2. Check the HTTP status code and response body.
-3. Check whether the response returns an unexpectedly large/complete set of records (which would suggest the payload altered the underlying query logic), or a normal/safe response.
+1. Enter `' OR '1'='1` into the Full Name field.
+2. Fill remaining fields with valid data and submit.
+3. Check the Active Visitors list where this visitor's name is displayed.
+4. Check whether the payload altered query behavior (e.g. an unexpectedly large/complete set of records, or a SQL exception), or whether it is stored and displayed as plain, harmless text with no change to normal application behavior.
 
 **Expected Result:**
-The payload should be treated as a literal search string with no special meaning — it should not cause the query to return all records, error out with a SQL exception, or behave differently from any other non-matching search term.
+The payload should either be rejected at input, or stored and displayed as plain visible text, treated as a literal string with no special meaning — it should never alter query behavior, expose unintended data, or cause a SQL error.
 
 **Execution:** [pass]
 

@@ -1,11 +1,11 @@
 ## Regression Subset — Minor Registration Form Update
 
 **Update I am assuming:** Full Name gets validation added to reject special
-characters and numbers — only letters (and probably spaces) are allowed,
+characters and numbers  only letters (and probably spaces) are allowed,
 enforced both client-side and server-side, with an error shown on invalid
 input. I picked this specifically because it relates back to Defect 3
 (the field currently accepts a string like `@#$#$^#$^%@#$@#$1234` with no
-validation at all) — this update is essentially the fix for that defect.
+validation at all) this update is essentially the fix for that defect.
 That defect maps to **QA-013** and **QA-016**("Verify registration with invalid Name") and(" Confirm registration with a whitespace-only full name is rejected Confirm registration with a whitespace-only full name is rejected")which currently fails and should flip to pass once this update ships.
 
 Because the rule is "letters (and spaces) only," it doesn't just fix
@@ -15,7 +15,7 @@ all contain zero letters or contain characters outside the allowed set,
 so all of them would now be rejected at the validation layer itself,
 rather than being accepted and then handled safely downstream (empty
 check, escaped rendering, or parameterized query). Any test that
-previously passed *because* the app safely handled a weird Full Name
+previously passed because the app safely handled a weird Full Name
 value needs to be re-checked against a new question: does it still pass
 now that the value is rejected before it ever reaches storage/rendering,
 instead of being stored and neutralized there?
@@ -51,5 +51,4 @@ path not just whether it's "part of registration" in general.
 | QA-014 | Testing Company, not Full Name — this field is explicitly unvalidated and out of scope for this update. |
 | QA-015 | Testing Purpose, not Full Name — same reasoning as QA-014. |
 | QA-017, QA-018 | Both are checkout-endpoint negative tests. No overlap with registration-time validation. |
-| QA-020 | Hits the *search* endpoint with a SQLi payload, not the registration form's Full Name input. Different code path (existing visitors, not new-registration validation), so the new rule doesn't touch it — search still needs to accept arbitrary query strings safely. (See the SQLi note above for the separate Full-Name-side case, which is covered, just not under this ID.) |
 | QA-021–QA-025 | All pagination / empty-list / single-record display tests. None of them care what the Full Name validation rules are. |
