@@ -8,6 +8,8 @@
 
 **Type:** Functional
 
+**Severity:** Medium
+
 **Description:** The API correctly returns check-in timestamps in UTC with proper ISO 8601 formatting (e.g., "2026-09-11T09:24:56Z"). However, the frontend displays this raw UTC time directly without converting it to Asia/Kathmandu (UTC+5:45), the timezone the app is designed for per the README. This causes the "Checked In" column to show a time roughly 5 hours 45 minutes behind the receptionist's actual local time.
 
 **Steps to Reproduce:**
@@ -27,6 +29,8 @@
 **Summary:** "Next" button appears/is clickable at exactly 20 active visitors, but page 2 loads empty
 
 **Type:** Functional
+
+**Severity:** Medium
 
 **Description:** When the active visitor count reaches exactly 20 (the stated page size), the "Next" pagination button becomes enabled. Clicking it navigates to a second page with no records, even though page 1 already displayed all existing visitors. This suggests the pagination logic enables "Next" based on the count reaching the page size threshold, rather than checking whether records actually exist beyond the current page.
 
@@ -48,6 +52,8 @@
 
 **Type:** Functional
 
+**Severity:** Medium
+
 **Description:** The visitor registration form's Full Name field accepts arbitrary special-character strings (e.g., "@#$#$^#$^%@#$@#$1234") with no client-side or server-side validation rejecting non-name input. The record is saved and appears in the active visitor list as entered. Since Full Name is meant to capture a person's name, input that contains no alphabetic characters at all does not satisfy the field's evident purpose.
 
 **Steps to Reproduce:**
@@ -68,6 +74,8 @@
 
 **Type:** Functional
 
+**Severity:** High
+
 **Description:** The check_out endpoint (PATCH /api/visitors/:id/check_out) does not guard against checking out a visitor who has already been checked out. Calling it a second time on the same visitor ID returns 200 OK and overwrites checked_out_at with a new timestamp, instead of rejecting the request or leaving the original checkout record unchanged. Since the app is responsible for accurately recording when a visitor checked out, silently overwriting that record on a repeat call corrupts historical data the app has already committed to tracking.
 
 **Steps to Reproduce:**
@@ -86,6 +94,8 @@
 **Summary:** Whitespace-only full name is accepted and persisted
 
 **Type:** Data
+
+**Severity:** Medium
 
 **Description:** The visitor registration form (and/or its underlying API validation) does not reject a full name consisting only of whitespace. This is a direct inconsistency with the app's own established behavior: a truly empty Full Name is correctly rejected (confirmed working), but a whitespace-only value — which conveys no name information either — is accepted. Evidence of this exists in the current dataset: visitor id 108 has full_name equal to a single space character (" "), confirming this was previously accepted rather than being a purely theoretical case.
 
@@ -107,6 +117,8 @@
 
 **Type:** Usability
 
+**Severity:** Low
+
 **Description:** When a visitor is registered with a very long Full Name (500+ characters), the Active Visitors table renders the entire string unbounded in the Name column. There is no truncation, ellipsis, or word-wrap containment, which causes the row to expand dramatically and visually breaks the alignment of the Company, Host, Purpose, Checked In, and Action columns for that row. This is independent of whether a maximum character limit should exist (see Assumptions/Open Questions) — regardless of how long input is permitted to be, the table should not visually break when it receives long input.
 
 **Steps to Reproduce:**
@@ -127,6 +139,8 @@
 
 **Type:** Functional
 
+**Severity:** High
+
 **Description:** The requirements state deactivated visitors "must not be selectable for repeat visits." A deactivated visitor was observed still present in the Full Name autocomplete dropdown and remained selectable. This matches the underlying search behavior directly: the search query does not filter by the `active` field, so deactivated visitors are never excluded from results. (Note: the same search also returns checked-out visitors, but that is expected/correct behavior, since a returning visitor should still be findable for a repeat visit — only the deactivated-visitor case violates the spec.)
 
 **Steps to Reproduce:**
@@ -146,6 +160,8 @@
 **Summary:** Deactivated visitors are not excluded from the active visitor list
 
 **Type:** Functional
+
+**Severity:** High
 
 **Description:** Per the requirements, deactivated visitors "must not appear in the active list." However, GET /api/visitors (the endpoint backing the Active Visitors list) does not filter out records where active is false. A visitor deactivated via PATCH /api/visitors/:id/deactivate continues to be returned by this endpoint, with active:false clearly present in the response, confirming the record itself is correctly flagged but simply not being filtered.
 
