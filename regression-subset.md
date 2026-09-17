@@ -24,7 +24,7 @@ I went through every test in `qa-suite.md` and decided in/out based on
 whether it actually touches the Full Name field or shares its validation
 path not just whether it's "part of registration" in general.
 
-### Tests Included
+### Tests In Scope for Regression
 
 | Test | Why |
 |------|-----|
@@ -36,7 +36,7 @@ path not just whether it's "part of registration" in general.
 | QA-019 | Confirms script-tag input doesn't execute. `<script>alert("hacked")</script>` is made almost entirely of special characters, so under the new rule this input should now be rejected outright at validation — its expected result should still pass, but for a different reason (rejected at the form, not stored-then-neutralized). Need to confirm the error path is what actually fires, not a coincidental pass from the old escaping behavior no longer being exercised. |
 | QA-020 |  malicious code  `' OR '1'='1`entered  directly into the Full Name field,It should now be rejected at validation instead of being accepted and safely stored as a literal string. Need to confirm it's caught there rather than passing for the old reason. |
 
-### Tests I'd leave out
+### Out of Scope for Regression
 
 | Test | Why |
 |------|-----|
