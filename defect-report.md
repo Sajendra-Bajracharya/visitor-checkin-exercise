@@ -48,28 +48,6 @@
 
 ### Defect 3
 
-**Summary:** Full name field accepts non-name input with no validation
-
-**Type:** Functional
-
-**Severity:** Medium
-
-**Description:** The visitor registration form's Full Name field accepts arbitrary special-character strings (e.g., "@#$#$^#$^%@#$@#$1234") with no client-side or server-side validation rejecting non-name input. The record is saved and appears in the active visitor list as entered. Since Full Name is meant to capture a person's name, input that contains no alphabetic characters at all does not satisfy the field's evident purpose.
-
-**Steps to Reproduce:**
-1. Open the visitor registration form.
-2. Enter "@#$#$^#$^%@#$@#$1234" in the Full Name field.
-3. Fill remaining required fields with valid data.
-4. Submit the form.
-
-**Expected Result:** The form should reject input that doesn't resemble a valid name (e.g., require at least some alphabetic characters), showing a validation error.
-
-**Actual Result:** The form accepts the input without error, and the visitor is registered and appears in the active list with the garbled name.
-
----
-
-### Defect 4
-
 **Summary:** Duplicate checkout silently succeeds and overwrites checkout timestamp
 
 **Type:** Functional
@@ -89,29 +67,7 @@
 
 ---
 
-### Defect 5
-
-**Summary:** Whitespace-only full name is accepted and persisted
-
-**Type:** Data
-
-**Severity:** Medium
-
-**Description:** The visitor registration form (and/or its underlying API validation) does not reject a full name consisting only of whitespace. This is a direct inconsistency with the app's own established behavior: a truly empty Full Name is correctly rejected (confirmed working), but a whitespace-only value — which conveys no name information either — is accepted. Evidence of this exists in the current dataset: visitor id 108 has full_name equal to a single space character (" "), confirming this was previously accepted rather than being a purely theoretical case.
-
-**Steps to Reproduce:**
-1. Open the visitor registration form.
-2. Enter only space characters into the Full Name field.
-3. Fill remaining fields with valid data and submit.
-   (Alternatively: query GET /api/visitors/search?q=%20%20%20 and observe that a record with full_name " " (id 108) already exists in the dataset.)
-
-**Expected Result:** A whitespace-only full name should be rejected with a validation error, both client-side and server-side, consistent with how a fully empty name is already rejected.
-
-**Actual Result:** The name is accepted; a record with a whitespace-only full_name already exists in the database (id 108).
-
----
-
-### Defect 6
+### Defect 4
 
 **Summary:** Long input text breaks Active Visitors table layout
 
@@ -133,7 +89,7 @@
 
 ---
 
-### Defect 7
+### Defect 5
 
 **Summary:** Deactivated visitors remain selectable via repeat-visit search
 
@@ -155,7 +111,7 @@
 
 ---
 
-### Defect 8
+### Defect 6
 
 **Summary:** Deactivated visitors are not excluded from the active visitor list
 
@@ -186,8 +142,12 @@ These were specifically tested for and found to be handled correctly. Included h
 
 ## Assumptions / Open Questions
 
+- **Full Name field accepts non-alphabetic, special-character input with no validation** (e.g., "@#$#$^#$^%@#$@#$1234" is accepted and saved as-is, with no client-side or server-side rejection). The requirements don't specify a format or character-set restriction for Full Name, so it's unclear whether this is intentional (any string is a valid "name" for logging purposes) or an oversight. Recommend confirming with the Product Owner whether Full Name should be restricted to letters/spaces, and if so, what the minimum acceptable format is.
+
+- **Whitespace-only Full Name is accepted and persisted** (a full name consisting only of space characters is saved without error). Worth noting: this sits somewhat apart from the point above, since the app already rejects a *fully empty* Full Name (confirmed working), so a whitespace-only value passes that check while conveying the same lack of information. Evidence exists in the current dataset — visitor id 108 has full_name equal to a single space character (" "), confirming this was previously accepted rather than being a purely theoretical case (reproducible via GET /api/visitors/search?q=%20%20%20). Recommend confirming with the Product Owner whether whitespace-only input should be treated the same as empty input.
+
 - **No administrator UI exists for deactivating visitors.** The README states deactivation is performed "by an administrator" but doesn't specify whether this requires a dedicated UI. The only working path found is the API endpoint (PATCH /api/visitors/:id/deactivate) — there is no visible admin section in the frontend. Unclear whether this is an intentional scope limitation for the exercise or a missing feature. Recommend confirming with the Product Owner whether an admin UI was expected as part of this deliverable.
 
-- **No maximum character length is specified for Full Name, Company, or Purpose fields.** The spec doesn't state a hard limit, so it's unclear whether one should be enforced server-side (e.g. 255 characters) or whether unbounded input is intentional. Recommend confirming with the Product Owner. (Note: this is distinct from Defect 6 above — the *lack of a limit* is not itself a defect, but the UI's failure to visually contain long input regardless of limit is.)
+- **No maximum character length is specified for Full Name, Company, or Purpose fields.** The spec doesn't state a hard limit, so it's unclear whether one should be enforced server-side (e.g. 255 characters) or whether unbounded input is intentional. Recommend confirming with the Product Owner. (Note: this is distinct from Defect 4 above — the *lack of a limit* is not itself a defect, but the UI's failure to visually contain long input regardless of limit is.)
 
 - **Company and Purpose fields appear fully unvalidated** (accept empty, whitespace-only, and arbitrary special characters). This is consistent with the working assumption that these fields are optional (empty submissions succeed), but it's worth confirming with the Product Owner whether any format expectations exist for these fields at all, or whether "accept anything, including nothing" is intentional.

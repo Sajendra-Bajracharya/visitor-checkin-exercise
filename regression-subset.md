@@ -1,28 +1,35 @@
 ## Regression Subset — Minor Registration Form Update
 
 **Update I am assuming:** Full Name gets validation added to reject special
-characters and numbers  only letters (and probably spaces) are allowed,
+characters and numbers only letters (and probably spaces) are allowed,
 enforced both client-side and server-side, with an error shown on invalid
-input. I picked this specifically because it relates back to Defect 3
-(the field currently accepts a string like `@#$#$^#$^%@#$@#$1234` with no
-validation at all) this update is essentially the fix for that defect.
-That defect maps to **QA-013** and **QA-016**("Verify registration with invalid Name") and(" Confirm registration with a whitespace-only full name is rejected Confirm registration with a whitespace-only full name is rejected")which currently fails and should flip to pass once this update ships.
+input. I picked this specifically because it relates back to the Full
+Name character-set question raised in defect-report.md's Assumptions /
+Open Questions section (the field currently accepts a string like
+`@#$#$^#$^%@#$@#$1234` with no validation at all, and this update is
+essentially one possible resolution of that open question). It also
+resolves the neighboring whitespace-only question in that same section,
+since a whitespace-only value contains no letters and would be rejected
+under this rule too. Together these map to **QA-013** ("Verify
+registration with invalid Name") and **QA-016** ("Confirm registration
+with a whitespace-only full name is rejected"), both of which currently
+fail and should flip to pass once this update ships.
 
-Because the rule is "letters (and spaces) only," it doesn't just fix
-Defect 3 it also changes *how* several other inputs get handled.
-Whitespace-only, `<script>...</script>`, and `' OR '1'='1`-style input
-all contain zero letters or contain characters outside the allowed set,
-so all of them would now be rejected at the validation layer itself,
-rather than being accepted and then handled safely downstream (empty
-check, escaped rendering, or parameterized query). Any test that
-previously passed because the app safely handled a weird Full Name
-value needs to be re-checked against a new question: does it still pass
-now that the value is rejected before it ever reaches storage/rendering,
-instead of being stored and neutralized there?
+Because the rule is "letters (and spaces) only," it doesn't just resolve
+those two open questions — it also changes *how* several other inputs
+get handled. Whitespace-only, `<script>...</script>`, and
+`' OR '1'='1`-style input all contain zero letters or contain characters
+outside the allowed set, so all of them would now be rejected at the
+validation layer itself, rather than being accepted and then handled
+safely downstream (empty check, escaped rendering, or parameterized
+query). Any test that previously passed because the app safely handled a
+weird Full Name value needs to be re-checked against a new question:
+does it still pass now that the value is rejected before it ever reaches
+storage/rendering, instead of being stored and neutralized there?
 
 I went through every test in `qa-suite.md` and decided in/out based on
 whether it actually touches the Full Name field or shares its validation
-path not just whether it's "part of registration" in general.
+path — not just whether it's "part of registration" in general.
 
 ### Tests In Scope for Regression
 
@@ -32,9 +39,9 @@ path not just whether it's "part of registration" in general.
 | QA-010 | POST /api/visitors — registers a visitor with a valid full_name at the API level. Same validation path as QA-001 but bypassing the UI, so worth confirming valid names still pass server-side too. |
 | QA-011 | Tests empty Full Name. Same validation layer as the new character rule — want to confirm the empty-name check still fires first/correctly and isn't overridden by the new rule. |
 | QA-013 | Tests invalid/unsupported input in Full Name. This is the *exact* case the update targets — this test's expected result should flip from fail to pass, so it must be re-run. |
-| QA-016 | Tests whitespace-only Full Name. Same validator — need to confirm this still gets rejected on its own terms (whitespace has no letters *or* special characters/numbers, so both rules could plausibly interact here). This is the same case as "Defect 5" (whitespace-only name), so no separate line item is needed for that. |
+| QA-016 | Tests whitespace-only Full Name. Same validator — need to confirm this still gets rejected on its own terms (whitespace has no letters *or* special characters/numbers, so both rules could plausibly interact here). This is the same case as the whitespace-only-name question in defect-report.md's Assumptions section, so no separate line item is needed for that. |
 | QA-019 | Confirms script-tag input doesn't execute. `<script>alert("hacked")</script>` is made almost entirely of special characters, so under the new rule this input should now be rejected outright at validation — its expected result should still pass, but for a different reason (rejected at the form, not stored-then-neutralized). Need to confirm the error path is what actually fires, not a coincidental pass from the old escaping behavior no longer being exercised. |
-| QA-020 |  malicious code  `' OR '1'='1`entered  directly into the Full Name field,It should now be rejected at validation instead of being accepted and safely stored as a literal string. Need to confirm it's caught there rather than passing for the old reason. |
+| QA-020 | Malicious payload `' OR '1'='1` entered directly into the Full Name field. It should now be rejected at validation instead of being accepted and safely stored as a literal string. Need to confirm it's caught there rather than passing for the old reason. |
 
 ### Out of Scope for Regression
 

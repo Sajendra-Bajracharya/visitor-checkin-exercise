@@ -219,7 +219,7 @@ Returns a success status (200/201) with the newly created visitor record, includ
 The visitor should not be registered and an appropriate
 validation message should be displayed.
 
-**Execution:** [pass]
+**Execution:** [pass ]
 
 ### QA-012 — Verify registration with empty Host field
 
